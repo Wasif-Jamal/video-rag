@@ -15,6 +15,7 @@ class TranscriptResponse(BaseModel):
     source_type: Literal[
         "captions",
         "whisper",
+        "cached",
     ]
     segment_count: int
     segments: List[TranscriptSegment]

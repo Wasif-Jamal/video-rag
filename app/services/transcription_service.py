@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+import json
 from app.config.log_config import LogConfig
 from app.services.caption_service import caption_service
 from app.services.whisper_service import whisper_service
@@ -15,8 +16,41 @@ class TranscriptionService:
         """
         segments = []
         source_type = None
+
+        #1. Check if transcript file already exists
+        transcript_path = (
+            Path("storage/transcripts/raw")
+            / f"{video_id}.json"
+        )
+
+        if transcript_path.exists():
+
+            logger.info(
+                "Transcript already exists. "
+                "Skipping regeneration."
+            )
+
+            with open(
+                transcript_path,
+                "r",
+                encoding="utf-8",
+            ) as file:
+
+                segments = json.load(file)
+
+            return TranscriptResponse(
+                video_id=video_id,
+                transcript_path=str(
+                    transcript_path
+                ),
+                source_type="cached",
+                segment_count=len(
+                    segments
+                ),
+                segments=segments,
+            )
         
-        # 1. Try Captions
+        # 2. Try Captions
         logger.info(f"Starting transcription pipeline for {video_id}")
         raw_captions = caption_service.get_captions(video_id)
         
@@ -25,7 +59,7 @@ class TranscriptionService:
             segments = TranscriptUtils.normalize_youtube_captions(raw_captions)
             source_type = "captions"
         else:
-            # 2. Fallback to Whisper
+            # 3. Fallback to Whisper
             logger.info(f"Falling back to Whisper for {video_id}")
             if not Path(local_video_path).exists():
                 logger.error(f"Video file not found for Whisper fallback: {local_video_path}")
@@ -52,11 +86,11 @@ class TranscriptionService:
                 detail="Generated transcript was empty."
             )
 
-        # 3. Persist Transcript
+        # 4. Persist Transcript
         logger.info(f"Persisting transcript for {video_id}")
         transcript_path = TranscriptUtils.save_transcript(video_id, segments)
         
-        # 4. Return Metadata
+        # 5. Return Metadata
         return TranscriptResponse(
             video_id=video_id,
             transcript_path=transcript_path,
