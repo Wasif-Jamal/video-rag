@@ -1,7 +1,15 @@
 from pydantic import BaseModel
 
 from app.schema.transcript_schema import (
-    TranscriptResponse,
+    TranscriptResponse
+)
+
+from app.schema.frame_schema import (
+    FrameExtractionResponse
+)
+
+from app.schema.frame_schema import (
+    FrameExtractionResponse,
 )
 
 
@@ -21,3 +29,4 @@ class VideoMetadata(BaseModel):
 class VideoIngestionResponse(BaseModel):
     video: VideoMetadata
     transcript: TranscriptResponse
+    frames: FrameExtractionResponse

@@ -46,6 +46,26 @@ def test_ingest_youtube_video_success(
                 }
             ],
         },
+        "frames": {
+            "video_id": "dQw4w9WgXcQ",
+            "frame_count": 2,
+            "frames": [
+                {
+                    "timestamp": 0,
+                    "frame_path": (
+                        "storage/frames/"
+                        "dQw4w9WgXcQ/frame_0000.jpg"
+                    ),
+                },
+                {
+                    "timestamp": 2,
+                    "frame_path": (
+                        "storage/frames/"
+                        "dQw4w9WgXcQ/frame_0001.jpg"
+                    ),
+                },
+            ],
+        },
     }
 
     response = client.post(
@@ -87,6 +107,23 @@ def test_ingest_youtube_video_success(
         == "Hello world"
     )
 
+    assert (
+        data["frames"]["frame_count"]
+        == 2
+    )
+
+    assert (
+        data["frames"]["frames"][0]
+        ["timestamp"]
+        == 0
+    )
+
+    assert (
+        data["frames"]["frames"][0]
+        ["frame_path"]
+        .endswith(".jpg")
+    )
+
 
 def test_ingest_youtube_video_invalid_url():
 
@@ -115,7 +152,7 @@ def test_ingest_youtube_video_too_long(
 
     mock_ingestion.side_effect = ValueError(
         "Video is too long (500s). "
-        "Maximum allowed length is 6 minutes."
+        "Maximum allowed length is 7 minutes."
     )
 
     response = client.post(

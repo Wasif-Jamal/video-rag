@@ -8,6 +8,10 @@ from app.services.transcription_service import (
     transcription_service,
 )
 
+from app.services.frame_extraction_service import (
+    frame_extraction_service,
+)
+
 
 class VideoIngestionService:
 
@@ -53,7 +57,16 @@ class VideoIngestionService:
             )
         )
 
-        # 5. Return ingestion result
+        # 5. Extract frames
+        frame_result = (
+            frame_extraction_service
+            .extract_frames(
+                video_id=video_id,
+                video_path=video_path,
+            )
+        )
+
+        # 6. Return ingestion result
         return {
             "video": {
                 "url": url,
@@ -67,6 +80,7 @@ class VideoIngestionService:
                 "local_path": video_path,
             },
             "transcript": transcript_result,
+            "frames": frame_result,
         }
 
 
