@@ -62,7 +62,7 @@ class TranscriptionService:
             transcript_path=transcript_path,
             source_type=source_type,
             segment_count=len(segments),
-            timestamps=segments
+            segments=segments
         )
 
 transcription_service = TranscriptionService()
