@@ -1,6 +1,12 @@
 from app.config.log_config import (
     LogConfig,
 )
+from app.prompts.prompts import (
+    prompt_manager,
+)
+from app.services.llm_service import (
+    llm_service,
+)
 from app.services.retrieval_service import (
     retrieval_service,
 )
@@ -16,8 +22,9 @@ class ChatService:
     ):
 
         retrieved_nodes = (
-            retrieval_service
-            .retrieve(query)
+            retrieval_service.retrieve(
+                query
+            )
         )
 
         context_chunks = []
@@ -26,16 +33,12 @@ class ChatService:
 
         for node in retrieved_nodes:
 
-            metadata = (
-                node.metadata
-            )
-
-            text = (
+            context_chunks.append(
                 node.text
             )
 
-            context_chunks.append(
-                text
+            metadata = (
+                node.metadata
             )
 
             frame_paths = (
@@ -50,15 +53,64 @@ class ChatService:
                 images.append(
                     {
                         "image_path": path,
-                        "score": (
-                            node.score
-                        ),
+                        "score": node.score,
                     }
                 )
 
-        answer = "\n\n".join(
+        context = "\n\n".join(
             context_chunks
         )
+
+        prompt = (
+            prompt_manager
+            .get_chat_prompt(
+                question=query,
+                context=context,
+            )
+        )
+
+        llm = (
+            llm_service.get_llm()
+        )
+
+        response = llm.invoke(
+            prompt
+        )
+
+        logger.info(
+            "Generated RAG response"
+        )
+
+        answer = ""
+
+        if isinstance(
+            response.content,
+            str,
+        ):
+
+            answer = response.content
+
+        elif isinstance(
+            response.content,
+            list,
+        ):
+
+            text_parts = []
+
+            for item in response.content:
+
+                if (
+                    isinstance(item, dict)
+                    and item.get("type") == "text"
+                ):
+
+                    text_parts.append(
+                        item.get("text", "")
+                    )
+
+            answer = "\n".join(
+                text_parts
+            )
 
         return {
             "answer": answer,
