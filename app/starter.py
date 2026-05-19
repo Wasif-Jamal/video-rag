@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.router import api_router
 from app.services.qdrant_service import qdrant_service
+from app.services.retrieval_service import retrieval_service
 from app.config.log_config import LogConfig
 
 logger = LogConfig.get_logger(__name__)
@@ -21,6 +22,9 @@ class AppStarter:
         
         # Initialize Qdrant
         qdrant_service.initialize()
+
+        # Intialize retrieval
+        retrieval_service.initialize()
 
         yield
         logger.info("Shutting down Video RAG Backend...")
