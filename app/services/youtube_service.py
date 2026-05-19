@@ -1,7 +1,8 @@
 import yt_dlp
-import logging
 
-logger = logging.getLogger(__name__)
+from app.config.log_config import LogConfig
+
+logger = LogConfig.get_logger(__name__)
 
 class YouTubeService:
     def get_metadata(self, url: str) -> dict:

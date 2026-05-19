@@ -13,6 +13,12 @@ dependencies = [
     "youtube-transcript-api>=0.6.2",
     "openai-whisper>=20231117",
     "llama-index-core>=0.14.22",
+    "llama-index-vector-stores-qdrant>=0.10.1",
+    "llama-index-embeddings-huggingface>=0.7.0",
+    "qdrant-client>=1.18.0",
+    "transformers>=5.8.1",
+    "torch>=2.12.0",
+    "pillow>=12.2.0",
 ]
 
 [dependency-groups]

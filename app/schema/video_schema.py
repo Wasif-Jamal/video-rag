@@ -4,13 +4,14 @@ from app.schema.node_schema import MultimodalNodeResponse
 from app.schema.transcript_schema import (
     TranscriptResponse
 )
-
 from app.schema.frame_schema import (
     FrameExtractionResponse
 )
-
 from app.schema.frame_schema import (
     FrameExtractionResponse,
+)
+from app.schema.indexing_schema import (
+    IndexingResponse
 )
 
 
@@ -32,3 +33,4 @@ class VideoIngestionResponse(BaseModel):
     transcript: TranscriptResponse
     frames: FrameExtractionResponse
     nodes: MultimodalNodeResponse
+    indexing: IndexingResponse

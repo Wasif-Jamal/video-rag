@@ -1,4 +1,3 @@
-import logging
 import subprocess
 from pathlib import Path
 
@@ -7,8 +6,9 @@ from app.utils.frame_utils import (
     frames_already_exist,
     get_frame_output_dir,
 )
+from app.config.log_config import LogConfig
 
-logger = logging.getLogger(__name__)
+logger = LogConfig.get_logger(__name__)
 
 
 class FrameExtractionService:

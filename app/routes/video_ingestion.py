@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, status
-import logging
 
 from app.schema.video_schema import (
     YouTubeRequest,
@@ -11,8 +10,9 @@ from app.services.video_ingestion_service import (
 from app.utils.youtube_validators import (
     validate_youtube_url,
 )
+from app.config.log_config import LogConfig
 
-logger = logging.getLogger(__name__)
+logger = LogConfig.get_logger(__name__)
 
 router = APIRouter(
     prefix="/video",

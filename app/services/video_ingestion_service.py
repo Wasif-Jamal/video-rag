@@ -17,6 +17,10 @@ from app.services.node_builder_service import (
     node_builder_service,
 )
 
+from app.services.indexing_service import (
+    indexing_service,
+)
+
 
 class VideoIngestionService:
 
@@ -86,7 +90,17 @@ class VideoIngestionService:
             )
         )
 
-        # 7. Return ingestion result
+        # 7. Index nodes into Qdrant
+        indexing_result = indexing_service.index_nodes(
+            text_nodes=(
+                node_result["text_nodes"]
+            ),
+            image_nodes=(
+                node_result["image_nodes"]
+            ),
+        )
+
+        # 8. Return ingestion result
         return {
             "video": {
                 "url": url,
@@ -101,7 +115,8 @@ class VideoIngestionService:
             },
             "transcript": transcript_result,
             "frames": frame_result,
-            "nodes": node_result["response"]
+            "nodes": node_result["response"],
+            "indexing": indexing_result,
         }
 
 

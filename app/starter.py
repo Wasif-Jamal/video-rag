@@ -1,13 +1,12 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.router import api_router
-import logging
+from app.services.qdrant_service import qdrant_service
+from app.config.log_config import LogConfig
 
-# Simple logger for now, can be expanded to match pdf-rag's log_config later if requested.
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = LogConfig.get_logger(__name__)
 
 class AppStarter:
     """
@@ -19,7 +18,10 @@ class AppStarter:
         Handles application startup and shutdown events.
         """
         logger.info("Starting Video RAG Backend initialization...")
-        # Future initialization for vector stores, models, etc. will go here.
+        
+        # Initialize Qdrant
+        qdrant_service.initialize()
+
         yield
         logger.info("Shutting down Video RAG Backend...")
 

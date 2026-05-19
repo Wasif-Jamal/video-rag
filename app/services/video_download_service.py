@@ -1,8 +1,8 @@
 import yt_dlp
-import logging
 from pathlib import Path
+from app.config.log_config import LogConfig
 
-logger = logging.getLogger(__name__)
+logger = LogConfig.get_logger(__name__)
 
 class VideoDownloadService:
     def __init__(self):
