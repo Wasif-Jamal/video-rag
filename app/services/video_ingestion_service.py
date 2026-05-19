@@ -1,3 +1,4 @@
+from app.schema.node_schema import MultimodalNodeResponse
 from app.services.youtube_service import (
     youtube_service,
 )
@@ -10,6 +11,10 @@ from app.services.transcription_service import (
 
 from app.services.frame_extraction_service import (
     frame_extraction_service,
+)
+
+from app.services.node_builder_service import (
+    node_builder_service,
 )
 
 
@@ -66,7 +71,22 @@ class VideoIngestionService:
             )
         )
 
-        # 6. Return ingestion result
+        # 6. Create text and image nodes
+        node_result = (
+            node_builder_service
+            .build_nodes(
+                transcript_segments=(
+                    transcript_result
+                    .segments
+                ),
+                frames=(
+                    frame_result["frames"]
+                ),
+                video_id=video_id,
+            )
+        )
+
+        # 7. Return ingestion result
         return {
             "video": {
                 "url": url,
@@ -81,6 +101,7 @@ class VideoIngestionService:
             },
             "transcript": transcript_result,
             "frames": frame_result,
+            "nodes": node_result["response"]
         }
 
 

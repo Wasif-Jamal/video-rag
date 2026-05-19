@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+from app.schema.node_schema import MultimodalNodeResponse
 from app.schema.transcript_schema import (
     TranscriptResponse
 )
@@ -30,3 +31,4 @@ class VideoIngestionResponse(BaseModel):
     video: VideoMetadata
     transcript: TranscriptResponse
     frames: FrameExtractionResponse
+    nodes: MultimodalNodeResponse
