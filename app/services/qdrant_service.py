@@ -1,11 +1,8 @@
-from uuid import uuid4
-
 from qdrant_client import (
     QdrantClient,
 )
 from qdrant_client.models import (
     Distance,
-    PointStruct,
     VectorParams,
 )
 
@@ -65,51 +62,25 @@ class QdrantService:
             .get_collection_name()
         )
 
-        if (
-            collection_name
-            in existing
-        ):
+        # Check for both main collection and image collection
+        for col_name in [collection_name, f"{collection_name}_image"]:
+            if col_name in existing:
+                logger.info(
+                    f"Qdrant collection {col_name} already exists"
+                )
+                continue
 
             logger.info(
-                "Qdrant collection "
-                "already exists"
+                f"Creating Qdrant collection: {col_name}"
             )
 
-            return
-
-        logger.info(
-            "Creating Qdrant collection"
-        )
-
-        self.client.create_collection(
-            collection_name=(
-                collection_name
-            ),
-            vectors_config=VectorParams(
-                size=vector_size,
-                distance=Distance.COSINE,
-            ),
-        )
-
-    def upsert_point(
-        self,
-        embedding: list[float],
-        payload: dict,
-    ):
-
-        self.client.upsert(
-            collection_name=(
-                qdrant_config
-                .get_collection_name()
-            ),
-            points=[
-                PointStruct(
-                    id=str(uuid4()),
-                    vector=embedding,
-                    payload=payload,
-                )
-            ],
-        )
+            self.client.create_collection(
+                collection_name=col_name,
+                vectors_config=VectorParams(
+                    size=vector_size,
+                    distance=Distance.COSINE,
+                ),
+            )
 
 
 qdrant_service = (

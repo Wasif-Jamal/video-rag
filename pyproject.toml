@@ -16,14 +16,14 @@ dependencies = [
     "llama-index-vector-stores-qdrant>=0.10.1",
     "llama-index-embeddings-huggingface>=0.7.0",
     "qdrant-client>=1.18.0",
-    "transformers>=5.8.1",
-    "torch>=2.12.0",
     "pillow>=10.2.0,<11.0.0",
     "llama-index-llms-gemini>=0.6.2",
     "pydantic-settings>=2.14.1",
     "langchain-google-genai>=4.2.2",
     "streamlit>=1.57.0",
     "requests>=2.34.2",
+    "llama-index-embeddings-clip>=0.6.0",
+    "clip",
 ]
 
 [dependency-groups]
@@ -31,3 +31,6 @@ dev = [
     "httpx>=0.28.1",
     "pytest>=9.0.3",
 ]
+
+[tool.uv.sources]
+clip = { git = "https://github.com/openai/CLIP.git" }

@@ -21,7 +21,7 @@ class NodeBuilderService:
         transcript_segments: list,
         frames: list,
         video_id: str,
-        window_size: int = 15,
+        window_size: int = 1,
     ):
 
         logger.info(

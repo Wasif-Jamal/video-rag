@@ -28,31 +28,54 @@ class ChatService:
         )
 
         context_chunks = []
-
         images = []
+        seen_paths = set()
 
         for node in retrieved_nodes:
+            actual_node = getattr(node, "node", node)
 
-            context_chunks.append(
-                node.text
+            node_text = (
+                getattr(actual_node, "text", "")
+                or ""
             )
+            if node_text:
+                context_chunks.append(node_text)
 
             metadata = (
-                node.metadata
-            )
-
-            frame_paths = (
-                metadata.get(
-                    "frame_paths",
-                    [],
+                getattr(
+                    actual_node,
+                    "metadata",
+                    {},
                 )
+                or {}
             )
 
+            # Extract from TextNode's metadata frame_paths
+            frame_paths = metadata.get(
+                "frame_paths", []
+            )
             for path in frame_paths:
+                if path not in seen_paths:
+                    seen_paths.add(path)
+                    images.append(
+                        {
+                            "image_path": path,
+                            "score": node.score,
+                        }
+                    )
 
+            # Extract from ImageNode's direct image_path
+            image_path = getattr(
+                actual_node, "image_path", None
+            )
+            if (
+                image_path
+                and image_path not in seen_paths
+            ):
+                seen_paths.add(image_path)
                 images.append(
                     {
-                        "image_path": path,
+                        "image_path": image_path,
                         "score": node.score,
                     }
                 )

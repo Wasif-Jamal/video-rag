@@ -1,17 +1,17 @@
 from llama_index.core import (
-    VectorStoreIndex,
+    Settings,
+)
+from llama_index.core.indices.multi_modal import (
+    MultiModalVectorStoreIndex,
 )
 from llama_index.vector_stores.qdrant import (
     QdrantVectorStore,
 )
-from llama_index.core import (
-    Settings,
-)
-from llama_index.core.embeddings import (
-    MockEmbedding,
-)
 
 from app.config.qdrant_config import qdrant_config
+from app.services.clip_embedding import (
+    CLIPEmbedding,
+)
 from app.services.qdrant_service import (
     qdrant_service,
 )
@@ -21,11 +21,8 @@ from app.config.log_config import (
 
 logger = LogConfig.get_logger(__name__)
 
-Settings.embed_model = (
-    MockEmbedding(
-        embed_dim=512
-    )
-)
+# Initialize our custom CLIPEmbedding model as the default embed model in Settings
+Settings.embed_model = CLIPEmbedding()
 
 
 class RetrievalService:
@@ -37,10 +34,10 @@ class RetrievalService:
     def initialize(self):
 
         logger.info(
-            "Initializing retrieval service"
+            "Initializing native multimodal retrieval service"
         )
 
-        vector_store = (
+        text_store = (
             QdrantVectorStore(
                 client=(
                     qdrant_service.client
@@ -51,11 +48,28 @@ class RetrievalService:
             )
         )
 
-        self.index = (
-            VectorStoreIndex
-            .from_vector_store(
-                vector_store
+        image_store = (
+            QdrantVectorStore(
+                client=(
+                    qdrant_service.client
+                ),
+                collection_name=(
+                    f"{qdrant_config.get_collection_name()}_image"
+                ),
             )
+        )
+
+        self.index = (
+            MultiModalVectorStoreIndex
+            .from_vector_store(
+                vector_store=text_store,
+                image_vector_store=image_store,
+                image_embed_model=Settings.embed_model,
+            )
+        )
+
+        logger.info(
+            "Native multimodal retrieval service initialized"
         )
 
     def retrieve(
@@ -67,7 +81,8 @@ class RetrievalService:
         retriever = (
             self.index
             .as_retriever(
-                similarity_top_k=top_k
+                similarity_top_k=top_k,
+                image_similarity_top_k=top_k,
             )
         )
 
@@ -77,7 +92,7 @@ class RetrievalService:
 
         logger.info(
             f"Retrieved "
-            f"{len(nodes)} nodes"
+            f"{len(nodes)} multimodal nodes"
         )
 
         return nodes

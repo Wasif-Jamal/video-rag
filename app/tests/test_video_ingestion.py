@@ -66,6 +66,14 @@ def test_ingest_youtube_video_success(
                 },
             ],
         },
+        "nodes": {
+            "text_node_count": 1,
+            "image_node_count": 2,
+        },
+        "indexing": {
+            "collection_name": "video_rag_multimodal",
+            "indexed_points": 3,
+        },
     }
 
     response = client.post(
