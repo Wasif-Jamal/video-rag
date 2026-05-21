@@ -4,28 +4,32 @@ class RAGPromptManager:
         self,
         question: str,
         context: str,
-    ) -> str:
+        history: str,
+    ):
 
         return f"""
-You are a helpful AI assistant for answering
-questions about video content.
+    You are a helpful AI assistant for answering
+    questions about videos.
 
-Use ONLY the provided context to answer.
+    Use ONLY:
+    1. Conversation history
+    2. Retrieved context
 
-If the answer is not present in the context,
-say you do not know.
+    If the answer is not present,
+    say:
+    "I do not know."
 
-Keep the answer concise and factual.
+    Conversation History:
+    {history}
 
-Question:
-{question}
+    Retrieved Context:
+    {context}
 
-Context:
-{context}
+    Current Question:
+    {question}
 
-Answer:
-"""
-
+    Answer:
+    """ 
 
 prompt_manager = (
     RAGPromptManager()

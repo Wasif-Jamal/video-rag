@@ -26,6 +26,7 @@ async def chat(
 
     return (
         chat_service.chat(
-            request.query
+            session_id=request.session_id,
+            query=request.query
         )
     )

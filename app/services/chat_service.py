@@ -7,6 +7,9 @@ from app.prompts.prompts import (
 from app.services.llm_service import (
     llm_service,
 )
+from app.services.memory_service import (
+    memory_service,
+)
 from app.services.retrieval_service import (
     retrieval_service,
 )
@@ -15,29 +18,38 @@ logger = LogConfig.get_logger(__name__)
 
 
 class ChatService:
-
     def chat(
         self,
+        session_id: str,
         query: str,
     ):
 
-        retrieved_nodes = (
-            retrieval_service.retrieve(
-                query
-            )
-        )
+        # 1. Retrieve memory history
+        history = memory_service.build_conversation_context(session_id)
+
+        # 2. Retrieve relevant nodes
+        retrieved_nodes = retrieval_service.retrieve(query)
 
         context_chunks = []
         images = []
         seen_paths = set()
 
         for node in retrieved_nodes:
-            actual_node = getattr(node, "node", node)
+            actual_node = getattr(
+                node,
+                "node",
+                node,
+            )
 
             node_text = (
-                getattr(actual_node, "text", "")
+                getattr(
+                    actual_node,
+                    "text",
+                    "",
+                )
                 or ""
             )
+
             if node_text:
                 context_chunks.append(node_text)
 
@@ -50,59 +62,55 @@ class ChatService:
                 or {}
             )
 
-            # Extract from TextNode's metadata frame_paths
+            # TextNode frame paths
             frame_paths = metadata.get(
-                "frame_paths", []
+                "frame_paths",
+                [],
             )
+
             for path in frame_paths:
                 if path not in seen_paths:
                     seen_paths.add(path)
+
                     images.append(
                         {
-                            "image_path": path,
-                            "score": node.score,
+                            "image_path": (path),
+                            "score": (node.score),
                         }
                     )
 
-            # Extract from ImageNode's direct image_path
+            # ImageNode direct image
             image_path = getattr(
-                actual_node, "image_path", None
+                actual_node,
+                "image_path",
+                None,
             )
-            if (
-                image_path
-                and image_path not in seen_paths
-            ):
+
+            if image_path and image_path not in seen_paths:
                 seen_paths.add(image_path)
+
                 images.append(
                     {
-                        "image_path": image_path,
-                        "score": node.score,
+                        "image_path": (image_path),
+                        "score": (node.score),
                     }
                 )
 
-        context = "\n\n".join(
-            context_chunks
+        context = "\n\n".join(context_chunks)
+
+        # 3. Build prompt
+        prompt = prompt_manager.get_chat_prompt(
+            question=query,
+            context=context,
+            history=history,
         )
 
-        prompt = (
-            prompt_manager
-            .get_chat_prompt(
-                question=query,
-                context=context,
-            )
-        )
+        llm = llm_service.get_llm()
 
-        llm = (
-            llm_service.get_llm()
-        )
+        # 4. Generate response
+        response = llm.invoke(prompt)
 
-        response = llm.invoke(
-            prompt
-        )
-
-        logger.info(
-            "Generated RAG response"
-        )
+        logger.info("Generated RAG response")
 
         answer = ""
 
@@ -110,30 +118,43 @@ class ChatService:
             response.content,
             str,
         ):
-
             answer = response.content
 
         elif isinstance(
             response.content,
             list,
         ):
-
             text_parts = []
 
             for item in response.content:
-
                 if (
-                    isinstance(item, dict)
+                    isinstance(
+                        item,
+                        dict,
+                    )
                     and item.get("type") == "text"
                 ):
-
                     text_parts.append(
-                        item.get("text", "")
+                        item.get(
+                            "text",
+                            "",
+                        )
                     )
 
-            answer = "\n".join(
-                text_parts
-            )
+            answer = "\n".join(text_parts)
+
+        # 5. Store conversation
+        memory_service.add_message(
+            session_id=session_id,
+            role="user",
+            content=query,
+        )
+
+        memory_service.add_message(
+            session_id=session_id,
+            role="assistant",
+            content=answer,
+        )
 
         return {
             "answer": answer,
@@ -141,6 +162,4 @@ class ChatService:
         }
 
 
-chat_service = (
-    ChatService()
-)
+chat_service = ChatService()

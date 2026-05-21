@@ -1,4 +1,5 @@
 import requests
+import streamlit as st
 
 from config.app_config import (
     config,
@@ -37,6 +38,9 @@ class APIClient:
                 "/chat"
             ),
             json={
+                "session_id": (
+                    st.session_state.session_id
+                ),
                 "query": query,
             },
         )

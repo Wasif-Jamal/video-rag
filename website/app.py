@@ -1,3 +1,5 @@
+import uuid
+
 import streamlit as st
 
 from components.chat import (
@@ -17,9 +19,22 @@ class VideoRAGApp:
             layout="wide",
         )
 
+    def initialize_session(self):
+
+        if (
+            "session_id"
+            not in st.session_state
+        ):
+
+            st.session_state.session_id = (
+                str(uuid.uuid4())
+            )
+
     def render(self):
 
         self.configure_page()
+
+        self.initialize_session()
 
         st.title(
             "Multimodal Video RAG"
